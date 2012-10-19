@@ -4,11 +4,13 @@
 @interface GPUImageFilterGroup : GPUImageOutput <GPUImageInput>
 {
     NSMutableArray *filters;
+    NSMutableArray *initialFilterTextureIndices;
+    
 }
 
 @property(readwrite, nonatomic, strong) GPUImageOutput<GPUImageInput> *terminalFilter;
 @property(readwrite, nonatomic, strong) NSArray *initialFilters;
-@property(readwrite, nonatomic, strong) GPUImageOutput<GPUImageInput> *inputFilterToIgnoreForUpdates; 
+@property(readwrite, nonatomic, strong) GPUImageOutput<GPUImageInput> *inputFilterToIgnoreForUpdates;
 
 // Filter management
 - (void)addFilter:(GPUImageOutput<GPUImageInput> *)newFilter;

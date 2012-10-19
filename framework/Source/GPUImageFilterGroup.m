@@ -15,7 +15,7 @@
     }
     
     filters = [[NSMutableArray alloc] init];
-    
+    initialFilterTextureIndices = [[NSMutableArray alloc]init];
     [self deleteOutputTexture];
     
     return self;
@@ -94,7 +94,11 @@
     {
         if (currentFilter != self.inputFilterToIgnoreForUpdates)
         {
-            [currentFilter newFrameReadyAtTime:frameTime atIndex:textureIndex];
+            NSInteger indexOfObject = [_initialFilters indexOfObject:currentFilter];
+            NSInteger textureIndexOfInitialFilter = [[initialFilterTextureIndices objectAtIndex:indexOfObject] integerValue];
+            
+            [currentFilter newFrameReadyAtTime:frameTime atIndex:textureIndexOfInitialFilter];
+            
         }
     }
 }
@@ -103,17 +107,22 @@
 {
     for (GPUImageOutput<GPUImageInput> *currentFilter in _initialFilters)
     {
-        [currentFilter setInputTexture:newInputTexture atIndex:textureIndex];
+        NSInteger indexOfObject = [_initialFilters indexOfObject:currentFilter];
+        NSInteger textureIndexOfInitialFilter = [[initialFilterTextureIndices objectAtIndex:indexOfObject] intValue];
+        
+        [currentFilter setInputTexture:newInputTexture atIndex: textureIndexOfInitialFilter ];
     }
 }
 
 - (NSInteger)nextAvailableTextureIndex;
 {
-//    if ([_initialFilters count] > 0)
-//    {
-//        return [[_initialFilters objectAtIndex:0] nextAvailableTextureIndex];
-//    }
+    [initialFilterTextureIndices removeAllObjects];
     
+    for( unsigned int i = 0; i < [_initialFilters count]; i++ )
+    {
+        GPUImageOutput<GPUImageInput> *currentFilter = [_initialFilters objectAtIndex:i];
+        [initialFilterTextureIndices addObject:[NSNumber numberWithInteger:currentFilter.nextAvailableTextureIndex] ];
+    }
     return 0;
 }
 
@@ -121,7 +130,13 @@
 {
     for (GPUImageOutput<GPUImageInput> *currentFilter in _initialFilters)
     {
-        [currentFilter setInputSize:newSize atIndex:textureIndex];
+        //        [currentFilter setInputSize:newSize atIndex:textureIndex];
+        
+        NSInteger indexOfObject = [_initialFilters indexOfObject:currentFilter];
+        NSInteger textureIndexOfInitialFilter = [[initialFilterTextureIndices objectAtIndex:indexOfObject] intValue];
+        
+        [currentFilter setInputSize:newSize atIndex:textureIndexOfInitialFilter];
+        
     }
 }
 
@@ -129,7 +144,11 @@
 {
     for (GPUImageOutput<GPUImageInput> *currentFilter in _initialFilters)
     {
-        [currentFilter setInputRotation:newInputRotation  atIndex:(NSInteger)textureIndex];
+        NSInteger indexOfObject = [_initialFilters indexOfObject:currentFilter];
+        NSInteger textureIndexOfInitialFilter = [[initialFilterTextureIndices objectAtIndex:indexOfObject] intValue];
+        
+        [currentFilter setInputRotation:newInputRotation  atIndex:(NSInteger)textureIndexOfInitialFilter];
+        
     }
 }
 
@@ -146,20 +165,20 @@
 {
     // I'm temporarily disabling adjustments for smaller output sizes until I figure out how to make this work better
     return CGSizeZero;
-
-    /*
-    if (CGSizeEqualToSize(cachedMaximumOutputSize, CGSizeZero))
-    {
-        for (id<GPUImageInput> currentTarget in _initialFilters)
-        {
-            if ([currentTarget maximumOutputSize].width > cachedMaximumOutputSize.width)
-            {
-                cachedMaximumOutputSize = [currentTarget maximumOutputSize];
-            }
-        }
-    }
     
-    return cachedMaximumOutputSize;
+    /*
+     if (CGSizeEqualToSize(cachedMaximumOutputSize, CGSizeZero))
+     {
+     for (id<GPUImageInput> currentTarget in _initialFilters)
+     {
+     if ([currentTarget maximumOutputSize].width > cachedMaximumOutputSize.width)
+     {
+     cachedMaximumOutputSize = [currentTarget maximumOutputSize];
+     }
+     }
+     }
+     
+     return cachedMaximumOutputSize;
      */
 }
 
